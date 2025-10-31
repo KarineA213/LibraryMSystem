@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+        }
+        .main-menu {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .menu-box {
+            background-color: #007bff;
+            color: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 1.2em;
+        }
+        .menu-box:hover {
+            background-color: #0056b3;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+            display: none; /* Oculta as seções por padrão */
+        }
+        .section.active {
+            display: block; /* Mostra a seção ativa */
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-update {
+            background-color: #ffc107;
+        }
+        .btn-back {
+            background-color: #6c757d;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #0056b3;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .pagination {
+            margin-top: 10px;
+            text-align: center;
+        }
+        .pagination button {
+            margin: 0 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 8px;
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="main-title">Sistema de Gerenciamento de Biblioteca</h1>
+
+        <div id="main-menu" class="main-menu">
+            <div class="menu-box" data-target="books-section">Livros</div>
+            <div class="menu-box" data-target="students-section">Estudantes</div>
+            <div class="menu-box" data-target="loans-section">Empréstimos</div>
+        </div>
+
+        <div id="books-section" class="section">
+            <button class="btn btn-back" onclick="showMainMenu()">Voltar</button>
+            <h2>Livros</h2>
+            <div id="books-form-area">
+                <h3>Adicionar Novo Livro</h3>
+                <form id="book-form">
+                    <input type="hidden" id="book-id">
+                    <div class="form-group">
+                        <label for="book-title">Título:</label>
+                        <input type="text" id="book-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="book-author">Autor:</label>
+                        <input type="text" id="book-author" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="book-isbn">ISBN:</label>
+                        <input type="text" id="book-isbn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="book-year">Ano de Publicação:</label>
+                        <input type="number" id="book-year" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="book-publisher">Editora:</label>
+                        <input type="text" id="book-publisher" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="book-copies">Cópias:</label>
+                        <input type="number" id="book-copies" required>
+                    </div>
+                    <button type="submit" class="btn">Salvar Livro</button>
+                </form>
+            </div>
+            <h3>Lista de Livros</h3>
+            <table id="books-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>ISBN</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="books-list">
+                    </tbody>
+            </table>
+            <div id="books-pagination" class="pagination"></div>
+        </div>
+        
+        <div id="students-section" class="section">
+            <button class="btn btn-back" onclick="showMainMenu()">Voltar</button>
+            <h2>Estudantes</h2>
+            <div id="students-form-area">
+                <h3>Adicionar Novo Estudante</h3>
+                <form id="student-form">
+                    <input type="hidden" id="student-id">
+                    <div class="form-group">
+                        <label for="student-name">Nome:</label>
+                        <input type="text" id="student-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-email">Email:</label>
+                        <input type="email" id="student-email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-phone">Telefone:</label>
+                        <input type="tel" id="student-phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="student-course">Curso:</label>
+                        <input type="text" id="student-course" required>
+                    </div>
+                    <button type="submit" class="btn">Salvar Estudante</button>
+                </form>
+            </div>
+            <h3>Lista de Estudantes</h3>
+            <table id="students-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Curso</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="students-list">
+                    </tbody>
+            </table>
+            <div id="students-pagination" class="pagination"></div>
+        </div>
+
+        <div id="loans-section" class="section">
+            <button class="btn btn-back" onclick="showMainMenu()">Voltar</button>
+            <h2>Empréstimos</h2>
+            <div id="loans-form-area">
+                <h3>Cadastrar Novo Empréstimo</h3>
+                <form id="loan-form">
+                    <input type="hidden" id="loan-id">
+
+                    <div class="form-group">
+                        <label for="loan-student-select">Estudante:</label>
+                        <select id="loan-student-select" required>
+                            <option value="">Selecione um estudante</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loan-book-select">Adicionar Livro:</label>
+                        <select id="loan-book-select">
+                            <option value="">Selecione um livro</option>
+                        </select>
+                        <button type="button" class="btn" onclick="addBookToLoan()">Adicionar</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="loan-due-date">Data de Devolução Prevista:</label>
+                        <input type="date" id="loan-due-date" required>
+                    </div>
+                    
+                    <h4>Livros no Empréstimo:</h4>
+                    <table id="loan-books-table">
+                        <thead>
+                            <tr>
+                                <th>ID do Livro</th>
+                                <th>Título</th>
+                                <th>Autor</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loan-books-list">
+                            </tbody>
+                    </table>
+
+                    <button type="submit" class="btn">Salvar Empréstimo</button>
+                </form>
+            </div>
+            
+            <h3>Lista de Empréstimos</h3>
+            <table id="loans-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Estudante</th>
+                        <th>Data do Empréstimo</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="loans-list">
+                    </tbody>
+            </table>
+            <div id="loans-pagination" class="pagination"></div>
+        </div>
+
+        <div id="loans-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3 id="modal-title">Empréstimos</h3>
+                <table id="student-loans-table">
+                    <thead>
+                        <tr>
+                            <th>ID do Empréstimo</th>
+                            <th>ID do Livro</th>
+                            <th>Título do Livro</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="student-loans-list">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080';
+
+        // Variáveis do Menu Principal
+        const mainMenu = document.getElementById('main-menu');
+        const sections = document.querySelectorAll('.section');
+        const mainTitle = document.getElementById('main-title');
+
+        // Variáveis da Seção de Livros
+        const bookForm = document.getElementById('book-form');
+        const booksList = document.getElementById('books-list');
+        const booksPagination = document.getElementById('books-pagination');
+        const bookSearchInput = document.getElementById('book-search');
+        let searchTitle = '';
+
+        // Variáveis da Seção de Estudantes
+        const studentForm = document.getElementById('student-form');
+        const studentsList = document.getElementById('students-list');
+        const studentsPagination = document.getElementById('students-pagination');
+        const loansModal = document.getElementById('loans-modal');
+        const loansModalClose = document.querySelector('#loans-modal .close-btn');
+        const studentLoansList = document.getElementById('student-loans-list');
+        const modalTitle = document.getElementById('modal-title');
+        let studentPage = 0;
+
+        // Variáveis da Seção de Empréstimos
+        const loanForm = document.getElementById('loan-form');
+        const loansList = document.getElementById('loans-list');
+        const loansPagination = document.getElementById('loans-pagination');
+        const loanStudentSelect = document.getElementById('loan-student-select');
+        const loanBookSelect = document.getElementById('loan-book-select');
+        const loanBooksList = document.getElementById('loan-books-list');
+        const loanDueDateInput = document.getElementById('loan-due-date');
+        let loanPage = 0;
+        let selectedBooks = [];
+
+        // Funções de navegação
+        function showMainMenu() {
+            mainMenu.style.display = 'grid';
+            mainTitle.style.display = 'block';
+            sections.forEach(section => section.classList.remove('active'));
+        }
+
+        document.querySelectorAll('.menu-box').forEach(box => {
+            box.addEventListener('click', (e) => {
+                const targetId = e.currentTarget.dataset.target;
+                showSection(targetId);
+            });
+        });
+
+        function showSection(sectionId) {
+            mainMenu.style.display = 'none';
+            mainTitle.style.display = 'none';
+            sections.forEach(section => {
+                if (section.id === sectionId) {
+                    section.classList.add('active');
+                    if (sectionId === 'books-section') {
+                        fetchBooks();
+                    } else if (sectionId === 'students-section') {
+                        fetchStudents();
+                    } else if (sectionId === 'loans-section') {
+                        fetchLoans();
+                        fetchStudentsForDropdown();
+                        fetchBooksForDropdown();
+                    }
+                } else {
+                    section.classList.remove('active');
+                }
+            });
+        }
+
+        // =================================================================================
+        // Funções para a entidade Livros (Books)
+        // =================================================================================
+        async function fetchBooks(page = 0, title = '') {
+            try {
+                const query = title ? `&title=${title}` : '';
+                const response = await fetch(`${API_BASE_URL}/books?page=${page}&size=5${query}`);
+                const data = await response.json();
+                booksList.innerHTML = '';
+                data.content.forEach(book => {
+                    const row = booksList.insertRow();
+                    row.innerHTML = `
+                        <td>${book.id}</td>
+                        <td>${book.title}</td>
+                        <td>${book.author}</td>
+                        <td>${book.isbn}</td>
+                        <td>
+                            <button class="btn btn-update" onclick="loadBookForUpdate(${book.id})">Editar</button>
+                            <button class="btn btn-delete" onclick="deleteBook(${book.id})">Excluir</button>
+                        </td>
+                    `;
+                });
+                renderPagination(booksPagination, data, (p) => fetchBooks(p, title));
+            } catch (error) {
+                console.error('Erro ao buscar livros:', error);
+                alert('Erro ao carregar os livros. Verifique se a API está rodando.');
+            }
+        }
+        
+        bookForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('book-id').value;
+            const bookData = {
+                title: document.getElementById('book-title').value,
+                author: document.getElementById('book-author').value,
+                isbn: document.getElementById('book-isbn').value,
+                publicationYear: document.getElementById('book-year').value,
+                publisher: document.getElementById('book-publisher').value,
+                copies: document.getElementById('book-copies').value
+            };
+            try {
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${API_BASE_URL}/books/${id}` : `${API_BASE_URL}/books`;
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(bookData)
+                });
+                if (response.ok) {
+                    alert(`Livro ${id ? 'atualizado' : 'adicionado'} com sucesso!`);
+                    bookForm.reset();
+                    document.getElementById('book-id').value = '';
+                    fetchBooks();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${JSON.stringify(errorData)}`);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar livro:', error);
+                alert('Erro ao salvar o livro. Verifique a conexão com a API.');
+            }
+        });
+
+        async function loadBookForUpdate(id) {
+            const response = await fetch(`${API_BASE_URL}/books/${id}`);
+            const book = await response.json();
+            document.getElementById('book-id').value = book.id;
+            document.getElementById('book-title').value = book.title;
+            document.getElementById('book-author').value = book.author;
+            document.getElementById('book-isbn').value = book.isbn;
+            document.getElementById('book-year').value = book.publicationYear;
+            document.getElementById('book-publisher').value = book.publisher;
+            document.getElementById('book-copies').value = book.copies;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteBook(id) {
+            if (confirm('Tem certeza que deseja excluir este livro?')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/books/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        alert('Livro excluído com sucesso!');
+                        fetchBooks();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Erro: ${JSON.stringify(errorData)}`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir livro:', error);
+                    alert('Erro ao excluir o livro. Verifique a conexão com a API.');
+                }
+            }
+        }
+
+        // =================================================================================
+        // Funções para a entidade Estudantes (Students)
+        // =================================================================================
+        async function fetchStudents(page = 0) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/students?page=${page}&size=5`);
+                const data = await response.json();
+                studentsList.innerHTML = '';
+                data.content.forEach(student => {
+                    const row = studentsList.insertRow();
+                    row.innerHTML = `
+                        <td>${student.id}</td>
+                        <td>${student.name}</td>
+                        <td>${student.email}</td>
+                        <td>${student.course}</td>
+                        <td>
+                            <button class="btn" onclick="showStudentLoans(${student.id}, 'ACTIVE')">Empréstimos Ativos</button>
+                            <button class="btn" onclick="showStudentLoans(${student.id}, 'CONCLUDED')">Empréstimos Devolvidos</button>
+                            <button class="btn btn-update" onclick="loadStudentForUpdate(${student.id})">Editar</button>
+                            <button class="btn btn-delete" onclick="deleteStudent(${student.id})">Excluir</button>
+                        </td>
+                    `;
+                });
+                renderPagination(studentsPagination, data, fetchStudents);
+            } catch (error) {
+                console.error('Erro ao buscar estudantes:', error);
+                alert('Erro ao carregar os estudantes. Verifique se a API está rodando.');
+            }
+        }
+
+        studentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('student-id').value;
+            const studentData = {
+                name: document.getElementById('student-name').value,
+                email: document.getElementById('student-email').value,
+                phone: document.getElementById('student-phone').value,
+                course: document.getElementById('student-course').value,
+            };
+            try {
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `${API_BASE_URL}/students/${id}` : `${API_BASE_URL}/students`;
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(studentData)
+                });
+                if (response.ok) {
+                    alert(`Estudante ${id ? 'atualizado' : 'adicionado'} com sucesso!`);
+                    studentForm.reset();
+                    document.getElementById('student-id').value = '';
+                    fetchStudents();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${JSON.stringify(errorData)}`);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar estudante:', error);
+                alert('Erro ao salvar o estudante. Verifique a conexão com a API.');
+            }
+        });
+
+        async function loadStudentForUpdate(id) {
+            const response = await fetch(`${API_BASE_URL}/students/${id}`);
+            const student = await response.json();
+            document.getElementById('student-id').value = student.id;
+            document.getElementById('student-name').value = student.name;
+            document.getElementById('student-email').value = student.email;
+            document.getElementById('student-phone').value = student.phone;
+            document.getElementById('student-course').value = student.course;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteStudent(id) {
+            if (confirm('Tem certeza que deseja excluir este estudante?')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/students/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        alert('Estudante excluído com sucesso!');
+                        fetchStudents();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Erro: ${JSON.stringify(errorData)}`);
+                    }
+                } catch (error) {
+                console.error('Erro ao excluir estudante:', error);
+                alert('Erro ao excluir o estudante. Verifique a conexão com a API.');
+                }
+            }
+        }
+
+        async function showStudentLoans(studentId, status) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/students/${studentId}`);
+                const student = await response.json();
+
+                studentLoansList.innerHTML = '';
+                const loans = status === 'ACTIVE' ? student.borrowedBooks : student.returnedBooks;
+                
+                loans.forEach(loan => {
+                    const row = studentLoansList.insertRow();
+                    row.innerHTML = `
+                        <td>${loan.id}</td>
+                        <td>${loan.loanItems[0].bookId}</td>
+                        <td>${loan.loanItems[0].bookTitle}</td>
+                        <td>${loan.status}</td>
+                    `;
+                });
+
+                modalTitle.textContent = 
+                    status === 'ACTIVE' ? `Empréstimos Ativos de ${student.name}` : `Empréstimos Devolvidos de ${student.name}`;
+                loansModal.style.display = 'block';
+
+            } catch (error) {
+                console.error('Erro ao buscar empréstimos do estudante:', error);
+                alert('Erro ao carregar os empréstimos. Verifique a API.');
+            }
+        }
+
+        loansModalClose.onclick = () => {
+            loansModal.style.display = 'none';
+        };
+
+        window.onclick = (event) => {
+            if (event.target === loansModal) {
+                loansModal.style.display = 'none';
+            }
+        };
+
+        // =================================================================================
+        // Funções para a entidade Empréstimos (Loans)
+        // =================================================================================
+        async function fetchLoans(page = 0) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/loans?page=${page}&size=5`);
+                const data = await response.json();
+                loansList.innerHTML = '';
+                data.content.forEach(loan => {
+                    const row = loansList.insertRow();
+                    row.innerHTML = `
+                        <td>${loan.id}</td>
+                        <td>${loan.loanStudents.studentsName}</td>
+                        <td>${new Date(loan.loanDate).toLocaleDateString()}</td>
+                        <td>${loan.status}</td>
+                        <td>
+                            <button class="btn btn-delete" onclick="deleteLoan(${loan.id})">Excluir</button>
+                        </td>
+                    `;
+                });
+                renderPagination(loansPagination, data, fetchLoans);
+            } catch (error) {
+                console.error('Erro ao buscar empréstimos:', error);
+                alert('Erro ao carregar os empréstimos. Verifique se a API está rodando.');
+            }
+        }
+        
+        async function fetchStudentsForDropdown() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/students`);
+                const data = await response.json();
+                loanStudentSelect.innerHTML = '<option value="">Selecione um estudante</option>';
+                data.content.forEach(student => {
+                    const option = document.createElement('option');
+                    option.value = student.id;
+                    option.textContent = `${student.name} (${student.email})`;
+                    loanStudentSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar estudantes para dropdown:', error);
+            }
+        }
+
+        async function fetchBooksForDropdown() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/books`);
+                const data = await response.json();
+                loanBookSelect.innerHTML = '<option value="">Selecione um livro</option>';
+                data.content.forEach(book => {
+                    const option = document.createElement('option');
+                    option.value = book.id;
+                    option.textContent = `${book.title} por ${book.author}`;
+                    option.dataset.title = book.title;
+                    option.dataset.author = book.author;
+                    loanBookSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar livros para dropdown:', error);
+            }
+        }
+
+        function addBookToLoan() {
+            const selectedOption = loanBookSelect.options[loanBookSelect.selectedIndex];
+            const bookId = selectedOption.value;
+            const bookTitle = selectedOption.dataset.title;
+            const bookAuthor = selectedOption.dataset.author;
+
+            if (bookId && !selectedBooks.find(b => b.bookId == bookId)) {
+                selectedBooks.push({ bookId: bookId, bookTitle: bookTitle, bookAuthor: bookAuthor });
+                renderSelectedBooks();
+            }
+        }
+
+        function removeBookFromLoan(bookId) {
+            selectedBooks = selectedBooks.filter(b => b.bookId != bookId);
+            renderSelectedBooks();
+        }
+
+        function renderSelectedBooks() {
+            loanBooksList.innerHTML = '';
+            selectedBooks.forEach(book => {
+                const row = loanBooksList.insertRow();
+                row.innerHTML = `
+                    <td>${book.bookId}</td>
+                    <td>${book.bookTitle}</td>
+                    <td>${book.bookAuthor}</td>
+                    <td><button type="button" class="btn btn-delete" onclick="removeBookFromLoan(${book.bookId})">Remover</button></td>
+                `;
+            });
+        }
+
+        loanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const studentId = loanStudentSelect.value;
+            const dueDate = loanDueDateInput.value;
+            
+            if (!studentId || selectedBooks.length === 0 || !dueDate) {
+                alert('Por favor, selecione um estudante, pelo menos um livro e a data de devolução.');
+                return;
+            }
+
+            const loanData = {
+                studentsId: parseInt(studentId),
+                loanItems: selectedBooks.map(book => ({
+                    bookId: parseInt(book.bookId),
+                    conditionOnLoan: "GOOD"
+                })),
+                dueDate: dueDate + "T10:00:00Z"
+            };
+
+            try {
+                const url = `${API_BASE_URL}/loans`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loanData)
+                });
+                
+                if (response.ok) {
+                    alert('Empréstimo adicionado com sucesso!');
+                    loanForm.reset();
+                    selectedBooks = [];
+                    renderSelectedBooks();
+                    fetchLoans();
+                } else {
+                    const errorData = await response.json();
+                    alert(`Erro: ${JSON.stringify(errorData)}`);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar empréstimo:', error);
+                alert('Erro ao salvar o empréstimo. Verifique a conexão com a API.');
+            }
+        });
+
+        async function deleteLoan(id) {
+            if (confirm('Tem certeza que deseja excluir este empréstimo?')) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/loans/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        alert('Empréstimo excluído com sucesso!');
+                        fetchLoans();
+                    } else {
+                        const errorData = await response.json();
+                        alert(`Erro: ${JSON.stringify(errorData)}`);
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir empréstimo:', error);
+                    alert('Erro ao excluir o empréstimo. Verifique a conexão com a API.');
+                }
+            }
+        }
+
+        // Funções Auxiliares
+        function renderPagination(container, data, fetchDataFunction) {
+            container.innerHTML = '';
+            const currentPage = data.number;
+            const totalPages = data.totalPages;
+
+            if (currentPage > 0) {
+                const prevBtn = document.createElement('button');
+                prevBtn.textContent = 'Anterior';
+                prevBtn.className = 'btn';
+                prevBtn.onclick = () => fetchDataFunction(currentPage - 1);
+                container.appendChild(prevBtn);
+            }
+
+            const pageInfo = document.createElement('span');
+            pageInfo.textContent = `Página ${currentPage + 1} de ${totalPages}`;
+            container.appendChild(pageInfo);
+
+            if (currentPage < totalPages - 1) {
+                const nextBtn = document.createElement('button');
+                nextBtn.textContent = 'Próxima';
+                nextBtn.className = 'btn';
+                nextBtn.onclick = () => fetchDataFunction(currentPage + 1);
+                container.appendChild(nextBtn);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // As funções de fetch não são chamadas aqui, pois as seções estão ocultas no início
+        });
+</script>
